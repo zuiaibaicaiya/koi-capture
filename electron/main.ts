@@ -27,6 +27,7 @@ const createWindow = async () => {
         frame: false,
         // alwaysOnTop: true,
         // skipTaskbar: true,
+        skipTaskbar: true,
         transparent: true,
         fullscreen: true,
         backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -43,7 +44,7 @@ const createWindow = async () => {
     const mainWindow = new BrowserWindow(config);
     if (process.argv.length > 2) {
         await mainWindow.loadURL(process.argv[2])
-        // mainWindow.webContents.openDevTools({mode: 'bottom'});
+        // mainWindow.webContents.openDevTools({mode: 'undocked'});
     } else {
         await mainWindow.loadFile('dist/index.html');
     }
@@ -59,6 +60,7 @@ const pinWindow = async () => {
         x: width - 500,
         y: 0,
         alwaysOnTop: true,
+        skipTaskbar: true,
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false,
@@ -119,20 +121,22 @@ if (!gotTheLock) {
         }
     });
     app.whenReady().then(async () => {
-        currentWindow = await createWindow();
-        globalShortcut.register('F1', async () => {
+        mainWindow = await createWindow();
+        globalShortcut.register('F2', async () => {
             if (!currentWindow) {
                 currentWindow = await createWindow();
             }
-            currentWindow.show()
+            currentWindow.show();
             setImmediate(() => {
                 capture()
             })
         })
-        // globalShortcut.register('Esc', async () => {
-        //     currentWindow.destroy();
-        //     currentWindow = await createWindow();
-        // })
+        globalShortcut.register('Esc', async () => {
+            if (currentWindow) {
+                currentWindow.webContents.send('CLEAR_CANVAS');
+                currentWindow.hide();
+            }
+        })
         globalShortcut.register('CommandOrControl+T', async () => {
             currentWindow.destroy();
             await pinWindow()

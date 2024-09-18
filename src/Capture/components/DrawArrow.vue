@@ -7,7 +7,6 @@ const { canvas } = inject('koiCapture') as { canvas: ShallowRef<Canvas> }
 drawArrow()
 
 function drawArrow() {
-    console.log(1111, canvas.value);
     let fromx = 0, fromy = 0, tox = 0, toy = 0;
     let polyLine: Polyline | null = null
     canvas.value?.on('mouse:down', function (event: TPointerEventInfo) {
@@ -24,9 +23,9 @@ function drawArrow() {
         tox = pointer.x;
         toy = pointer.y;
 
-        var angle = Math.atan2(toy - fromy, tox - fromx);
+        const angle = Math.atan2(toy - fromy, tox - fromx);
 
-        var headlen = 10;  // arrow head size
+        const headlen = 10;  // arrow head size
 
         // bring the line end back some to account for arrow head.
         tox = tox - (headlen) * Math.cos(angle);
