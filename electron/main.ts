@@ -17,7 +17,7 @@ let currentWindow: BrowserWindow;
 
 const createWindow = async () => {
     const primaryDisplay = screen.getPrimaryDisplay()
-    const {width, height} = primaryDisplay.bounds
+    const { width, height } = primaryDisplay.bounds
     const config: BrowserWindowConstructorOptions = {
         width,
         height,
@@ -25,12 +25,12 @@ const createWindow = async () => {
         // maximizable: false,
         // titleBarStyle: "hidden",
         frame: false,
-        // alwaysOnTop: true,
-        // skipTaskbar: true,
+        alwaysOnTop: true,
         skipTaskbar: true,
         transparent: true,
         fullscreen: true,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        resizable: false,
+        // backgroundColor: "rgba(0, 0, 0, 0.6)",
         show: false,
         paintWhenInitiallyHidden: true,
         webPreferences: {
@@ -40,8 +40,8 @@ const createWindow = async () => {
             preload: path.join(__dirname, 'preload.cjs')
         },
     };
-    // mainWindow.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true})
     const mainWindow = new BrowserWindow(config);
+    mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
     if (process.argv.length > 2) {
         await mainWindow.loadURL(process.argv[2])
         // mainWindow.webContents.openDevTools({mode: 'undocked'});
@@ -52,7 +52,7 @@ const createWindow = async () => {
 };
 const pinWindow = async () => {
     const primaryDisplay = screen.getPrimaryDisplay()
-    const {width, height} = primaryDisplay.bounds
+    const { width, height } = primaryDisplay.bounds
     const config: BrowserWindowConstructorOptions = {
         width: 500,
         height: 400,
@@ -81,7 +81,7 @@ const pinWindow = async () => {
 
 function capture() {
     const primaryDisplay = screen.getPrimaryDisplay()
-    const {width, height} = primaryDisplay.bounds
+    const { width, height } = primaryDisplay.bounds
     desktopCapturer.getSources({
         types: ['screen'],
         thumbnailSize: {
@@ -91,16 +91,13 @@ function capture() {
     }).then(sources => {
         for (const source of sources) {
             if (source.id.startsWith('screen')) {
-                fs.writeFileSync(new Date().getTime() + "-1.png", source.thumbnail.toPNG())
-                setImmediate(() => {
-                    currentWindow.webContents.send('SET_SOURCE_BG', source.thumbnail.toPNG())
-                })
-                return
+                currentWindow.webContents.send('SET_SOURCE_BG', source.thumbnail.toPNG())
+                // fs.writeFileSync(new Date().getTime() + "-1.png", source.thumbnail.toPNG())
+                break
             }
         }
+        currentWindow.show();
     })
-
-
 }
 
 const gotTheLock = app.requestSingleInstanceLock();
@@ -126,15 +123,13 @@ if (!gotTheLock) {
             if (!currentWindow) {
                 currentWindow = await createWindow();
             }
-            currentWindow.show();
-            setImmediate(() => {
-                capture()
-            })
+            capture()
+            // currentWindow.show();
         })
         globalShortcut.register('Esc', async () => {
             if (currentWindow) {
                 currentWindow.webContents.send('CLEAR_CANVAS');
-                currentWindow.hide();
+                currentWindow.minimize();
             }
         })
         globalShortcut.register('CommandOrControl+T', async () => {

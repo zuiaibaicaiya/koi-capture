@@ -5,6 +5,7 @@
 
 #app {
   overflow: hidden;
+  background-color: transparent;
 
   ::-webkit-scrollbar {
     display: none;
