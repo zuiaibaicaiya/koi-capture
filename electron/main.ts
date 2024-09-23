@@ -17,7 +17,7 @@ let currentWindow: BrowserWindow;
 
 const createWindow = async () => {
     const primaryDisplay = screen.getPrimaryDisplay()
-    const { width, height } = primaryDisplay.bounds
+    const {width, height} = primaryDisplay.bounds
     const config: BrowserWindowConstructorOptions = {
         width,
         height,
@@ -41,7 +41,7 @@ const createWindow = async () => {
         },
     };
     const mainWindow = new BrowserWindow(config);
-    mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+    mainWindow.setVisibleOnAllWorkspaces(true, {visibleOnFullScreen: true})
     if (process.argv.length > 2) {
         await mainWindow.loadURL(process.argv[2])
         // mainWindow.webContents.openDevTools({mode: 'undocked'});
@@ -52,7 +52,7 @@ const createWindow = async () => {
 };
 const pinWindow = async () => {
     const primaryDisplay = screen.getPrimaryDisplay()
-    const { width, height } = primaryDisplay.bounds
+    const {width, height} = primaryDisplay.bounds
     const config: BrowserWindowConstructorOptions = {
         width: 500,
         height: 400,
@@ -81,22 +81,22 @@ const pinWindow = async () => {
 
 function capture() {
     const primaryDisplay = screen.getPrimaryDisplay()
-    const { width, height } = primaryDisplay.bounds
+    const {width, height} = primaryDisplay.bounds
     desktopCapturer.getSources({
         types: ['screen'],
         thumbnailSize: {
-            width: width * primaryDisplay.scaleFactor,
-            height: height * primaryDisplay.scaleFactor,
+            width: width,
+            height: height,
         }
     }).then(sources => {
         for (const source of sources) {
             if (source.id.startsWith('screen')) {
                 currentWindow.webContents.send('SET_SOURCE_BG', source.thumbnail.toPNG())
-                // fs.writeFileSync(new Date().getTime() + "-1.png", source.thumbnail.toPNG())
+                fs.writeFileSync(new Date().getTime() + "-1.png", source.thumbnail.toPNG())
                 break
             }
         }
-        currentWindow.show();
+        // currentWindow.show();
     })
 }
 
@@ -124,7 +124,7 @@ if (!gotTheLock) {
                 currentWindow = await createWindow();
             }
             capture()
-            // currentWindow.show();
+            currentWindow.show();
         })
         globalShortcut.register('Esc', async () => {
             if (currentWindow) {
