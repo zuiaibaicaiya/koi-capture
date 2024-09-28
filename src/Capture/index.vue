@@ -34,7 +34,6 @@ function init() {
 const downPoint = shallowRef<Point>(new Point()) // 按下鼠标时的坐标
 const upPoint = shallowRef<Point>(new Point()) // 松开鼠标时的坐标
 const isMouseDown = shallowRef(false);
-const mask = shallowRef<Rect>()
 drawBg();
 
 function drawBg() {

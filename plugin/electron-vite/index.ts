@@ -10,6 +10,7 @@ import { builtinModules } from 'module';
 async function buildElectron(encode = false) {
     await build({
         root: resolve(process.cwd(), 'dist'), // 指向主进程目录
+        logLevel: 'error',
         build: {
             outDir: resolve(process.cwd(), 'dist', 'electron'),
             minify: false,

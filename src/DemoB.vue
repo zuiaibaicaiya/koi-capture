@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {nextTick, onMounted, shallowRef, useTemplateRef} from "vue";
+import {onMounted, shallowRef, useTemplateRef} from "vue";
 import {
   Canvas,
   PencilBrush,
