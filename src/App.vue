@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import Capture from './Capture/index.vue'
+import DemoB from "./DemoB.vue";
 </script>
 <template>
-  <Capture />
+  <DemoB/>
 </template>
 
 <style scoped></style>

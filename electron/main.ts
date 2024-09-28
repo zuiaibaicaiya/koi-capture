@@ -82,17 +82,19 @@ const pinWindow = async () => {
 function capture() {
     const primaryDisplay = screen.getPrimaryDisplay()
     const {width, height} = primaryDisplay.bounds
+    const startTime = new Date().getTime();
     desktopCapturer.getSources({
         types: ['screen'],
         thumbnailSize: {
-            width: width,
-            height: height,
+            width: width * primaryDisplay.scaleFactor,
+            height: height * primaryDisplay.scaleFactor,
         }
     }).then(sources => {
         for (const source of sources) {
             if (source.id.startsWith('screen')) {
-                currentWindow.webContents.send('SET_SOURCE_BG', source.thumbnail.toPNG())
-                fs.writeFileSync(new Date().getTime() + "-1.png", source.thumbnail.toPNG())
+                currentWindow.webContents.send('SET_SOURCE_BG', source.thumbnail.toPNG(), startTime)
+                console.log(new Date().getTime() - startTime);
+                fs.writeFileSync(String(new Date().getTime() - startTime) + "-1.png", source.thumbnail.toPNG())
                 break
             }
         }
@@ -126,7 +128,7 @@ if (!gotTheLock) {
             capture()
             currentWindow.show();
         })
-        globalShortcut.register('Esc', async () => {
+        globalShortcut.register('F3', async () => {
             if (currentWindow) {
                 currentWindow.webContents.send('CLEAR_CANVAS');
                 currentWindow.minimize();
