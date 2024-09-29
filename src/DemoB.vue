@@ -10,9 +10,6 @@ import {
   TPointerEventInfo,
   FabricImage
 } from "fabric";
-import {useMouse} from "@vueuse/core";
-
-const {x, y} = useMouse()
 
 const domCanvas = useTemplateRef<HTMLCanvasElement>('domCanvas');
 const toolbar = useTemplateRef<HTMLDivElement>('toolbar');
@@ -27,6 +24,7 @@ const clipPath = new Rect({
   absolutePositioned: true,
   centeredScaling: true,
   inverted: true,
+  objectCaching: false,
 });
 const mask = new Rect({
   width: width,
@@ -43,6 +41,7 @@ const rect = new Rect({
   strokeWidth: 1,
   centeredScaling: true,
   lockRotation: true,
+  objectCaching: false,
 })
 rect.setControlVisible('mtr', false)
 onMounted(() => {
@@ -76,14 +75,6 @@ async function init() {
     canvas.value!.selectionColor = 'transparent' // 选框填充色：透明
     canvas.value!.selectionBorderColor = 'rgba(0, 0, 0, 0)' // 选框边框颜色：透明度很低的黑色（看上去是灰色）
     // canvas.value!.skipTargetFind = true // 禁止选中
-
-    // FabricImage.fromURL(BG).then(img => {
-    //   img.scaleToWidth(width)
-    //   img.scaleToHeight(height)
-    //   // cv一份给背景图
-    //   canvas.value!.backgroundImage = img;
-    //   canvas.value?.renderAll();
-    // })
 
     function canvasMouseDown(e: TPointerEventInfo) {
       isMouseDown.value = true;
@@ -122,29 +113,27 @@ async function init() {
         const option = {
           left: e.target.left,
           top: e.target.top,
-          dirty: true,
         }
         clipPath.set(option)
         rect.set(option)
-        rect.setCoords()
-        toolbar.value!.style.cssText = `left:${rect.left}px;top:${rect.top + 10}px;display:block`
+        toolbar.value!.style.cssText = `left:${rect.left}px;top:${option.top + rect.getScaledHeight() + 10}px;display:block`
       },
       'object:scaling': (e) => {
         const option = {
           left: e.target.left,
-          top: e.target?.top,
+          top: e.target.top,
           scaleX: e.target?.scaleX,
           scaleY: e.target?.scaleY,
         }
-        rect.set(option)
         clipPath.set(option)
-        toolbar.value!.style.cssText = `left:${x.value}px;top:${y.value + 10}px;display:block`
+        rect.set(option)
+        toolbar.value!.style.cssText = `left:${option.left}px;top:${option.top + rect.getScaledHeight() + 10}px;display:block`
       },
+      'mouse:move': canvasMouseMove,
+      'mouse:down': canvasMouseDown,
+      'mouse:up': canvasMouseUp,
     });
 
-    canvas.value!.on('mouse:move', canvasMouseMove)   // 鼠标在画布上按下
-    canvas.value!.on('mouse:down', canvasMouseDown)   // 鼠标在画布上按下
-    canvas.value!.on('mouse:up', canvasMouseUp)       // 鼠标在画布上松开
     canvas.value!.renderAll();
   }
 }

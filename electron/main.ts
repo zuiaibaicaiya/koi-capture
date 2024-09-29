@@ -93,8 +93,8 @@ function capture() {
         for (const source of sources) {
             if (source.id.startsWith('screen')) {
                 currentWindow.webContents.send('SET_SOURCE_BG', source.thumbnail.toPNG(), startTime)
-                console.log(new Date().getTime() - startTime);
-                fs.writeFileSync(String(new Date().getTime() - startTime) + "-1.png", source.thumbnail.toPNG())
+                // console.log(new Date().getTime() - startTime);
+                // fs.writeFileSync(String(new Date().getTime() - startTime) + "-1.png", source.thumbnail.toPNG())
                 break
             }
         }
