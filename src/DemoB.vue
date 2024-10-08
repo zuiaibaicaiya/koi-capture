@@ -74,6 +74,7 @@ window.electronAPI?.setImg((png: Uint8Array, startTime: number) => {
 async function init() {
   if (domCanvas.value) {
     canvas.value = new Canvas(domCanvas.value!, {
+      enableRetinaScaling: true,
       width: width,
       height: height,
       fill: 'rgba(0, 0, 0, 0.5)',
@@ -168,11 +169,29 @@ function freeDraw() {
   }
 }
 
+function exportPng() {
+  const dataURL = canvas.value?.toDataURL({
+    multiplier: window.devicePixelRatio,
+    enableRetinaScaling: true,
+    format: 'png', // 图片格式，可以是 'png' 或 'jpeg'
+    width,    // 导出图片的宽度
+    height    // 导出图片的高度
+  })
+  if (dataURL) {
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'canvas_image.png';
+    link.click();
+  }
+}
 </script>
 
 <template>
   <div ref="toolbar" class="toolbar">
-    <a-button type="primary" @click="freeDraw">自由绘制</a-button>
+    <a-space>
+      <a-button type="primary" @click="freeDraw">自由绘制</a-button>
+      <a-button type="primary" @click="exportPng">自由绘制</a-button>
+    </a-space>
   </div>
   <canvas ref="domCanvas"></canvas>
 </template>

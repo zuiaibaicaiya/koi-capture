@@ -1,13 +1,14 @@
 import {
     app,
     BrowserWindowConstructorOptions,
-    desktopCapturer,
     globalShortcut,
     BrowserWindow,
     screen,
     ipcMain,
 } from 'electron';
 import * as path from "path";
+import {Image} from "node-screenshots";
+
 
 let mainWindow: BrowserWindow;
 let currentWindow: BrowserWindow;
@@ -65,38 +66,23 @@ const pinWindow = async () => {
             preload: path.join(__dirname, 'preload.cjs')
         },
     };
-    // mainWindow.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true})
     const mainWindow = new BrowserWindow(config);
     if (process.argv.length > 2) {
         await mainWindow.loadURL(process.argv[2])
-        // mainWindow.webContents.openDevTools({mode: 'undocked'});
     } else {
         await mainWindow.loadFile('dist/index.html');
     }
-    // mainWindow.webContents.openDevTools({mode: 'undocked'});
+    // mainWindow.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true})
 }
 
+const {Monitor} = require("node-screenshots");
+
 function capture() {
-    const primaryDisplay = screen.getPrimaryDisplay()
-    const {width, height} = primaryDisplay.bounds
     const startTime = new Date().getTime();
-    desktopCapturer.getSources({
-        types: ['screen'],
-        thumbnailSize: {
-            width: width * primaryDisplay.scaleFactor,
-            height: height * primaryDisplay.scaleFactor,
-        }
-    }).then(sources => {
-        for (const source of sources) {
-            if (source.id.startsWith('screen')) {
-                currentWindow.webContents.send('SET_SOURCE_BG', source.thumbnail.toPNG(), startTime)
-                // console.log(new Date().getTime() - startTime);
-                // fs.writeFileSync(String(new Date().getTime() - startTime) + "-1.png", source.thumbnail.toPNG())
-                break
-            }
-        }
-        // currentWindow.show();
-    })
+    const monitor = Monitor.fromPoint(0, 0);
+    monitor.captureImage().then((data: Image) => {
+        currentWindow.webContents.send('SET_SOURCE_BG', data.toPngSync(), startTime)
+    });
 }
 
 const gotTheLock = app.requestSingleInstanceLock();
