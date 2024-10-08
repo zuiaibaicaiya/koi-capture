@@ -5,11 +5,9 @@ import {
     globalShortcut,
     BrowserWindow,
     screen,
+    ipcMain,
 } from 'electron';
-
-import path from 'path'
-import fs from "fs";
-
+import * as path from "path";
 
 let mainWindow: BrowserWindow;
 let currentWindow: BrowserWindow;
@@ -30,7 +28,6 @@ const createWindow = async () => {
         transparent: true,
         fullscreen: true,
         resizable: false,
-        // backgroundColor: "rgba(0, 0, 0, 0.6)",
         show: false,
         paintWhenInitiallyHidden: true,
         webPreferences: {
@@ -42,7 +39,7 @@ const createWindow = async () => {
     };
     const mainWindow = new BrowserWindow(config);
     mainWindow.setVisibleOnAllWorkspaces(true, {visibleOnFullScreen: true})
-    if (process.argv.length > 2) {
+    if (process.argv.length > 2 && process.argv.find(v => v.includes('http://localhost'))) {
         await mainWindow.loadURL(process.argv[2])
         // mainWindow.webContents.openDevTools({mode: 'undocked'});
     } else {
@@ -109,18 +106,26 @@ if (!gotTheLock) {
 } else {
     app.on('second-instance', (event, commandLine, workingDirectory) => {
         // 用户正在尝试运行第二个实例，我们需要让焦点指向我们的窗口
-        if (mainWindow) {
-            if (mainWindow.isMinimized()) {
-                mainWindow.restore();
+        if (currentWindow) {
+            if (currentWindow.isMinimized()) {
+                currentWindow.restore();
             }
-            if (!mainWindow.isVisible()) {
-                mainWindow.show();
+            if (!currentWindow.isVisible()) {
+                currentWindow.show();
             }
-            mainWindow.focus();
+            currentWindow.focus();
+            currentWindow.webContents.reload();
         }
     });
     app.whenReady().then(async () => {
-        mainWindow = await createWindow();
+        currentWindow = await createWindow();
+        ipcMain.on('HIDE_WIN', () => {
+            if (currentWindow) {
+                currentWindow.webContents.reload();
+                currentWindow.minimize();
+            }
+        })
+
         globalShortcut.register('F2', async () => {
             if (!currentWindow) {
                 currentWindow = await createWindow();
@@ -128,20 +133,11 @@ if (!gotTheLock) {
             capture()
             currentWindow.show();
         })
-        globalShortcut.register('F3', async () => {
-            if (currentWindow) {
-                currentWindow.webContents.send('CLEAR_CANVAS');
-                currentWindow.minimize();
-            }
-        })
         globalShortcut.register('CommandOrControl+T', async () => {
             currentWindow.destroy();
             await pinWindow()
             currentWindow = await createWindow();
         })
-        if (process.env.NODE_ENV === 'building') {
-            // encryptFile();
-        }
     });
     app.on('window-all-closed', () => {
         globalShortcut.unregisterAll();

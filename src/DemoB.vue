@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onMounted, shallowRef, useTemplateRef} from "vue";
+import {nextTick, onMounted, shallowRef, useTemplateRef, watch} from "vue";
 import {
   Canvas,
   PencilBrush,
@@ -10,6 +10,9 @@ import {
   TPointerEventInfo,
   FabricImage
 } from "fabric";
+import {useMagicKeys} from '@vueuse/core'
+
+const {escape} = useMagicKeys()
 
 const domCanvas = useTemplateRef<HTMLCanvasElement>('domCanvas');
 const toolbar = useTemplateRef<HTMLDivElement>('toolbar');
@@ -29,7 +32,8 @@ const clipPath = new Rect({
 const mask = new Rect({
   width: width,
   height: height,
-  fill: 'rgba(0, 0, 0, 0.5)',
+  // fill: 'rgba(0, 0, 0, 0.5)',
+  fill: 'transparent',
   selectable: false,
   clipPath
 })
@@ -47,6 +51,14 @@ rect.setControlVisible('mtr', false)
 onMounted(() => {
   init();
 });
+watch(escape, (v) => {
+  if (v) {
+    nextTick(() => {
+      window.electronAPI?.hideWin();
+    })
+  }
+})
+
 window.electronAPI?.setImg((png: Uint8Array, startTime: number) => {
   const bgUrl = URL.createObjectURL(new Blob([png], {type: 'image/png'}));
   FabricImage.fromURL(bgUrl).then(img => {
@@ -61,7 +73,7 @@ window.electronAPI?.setImg((png: Uint8Array, startTime: number) => {
 
 async function init() {
   if (domCanvas.value) {
-    canvas.value = new Canvas(domCanvas.value, {
+    canvas.value = new Canvas(domCanvas.value!, {
       width: width,
       height: height,
       fill: 'rgba(0, 0, 0, 0.5)',
@@ -79,6 +91,9 @@ async function init() {
     function canvasMouseDown(e: TPointerEventInfo) {
       isMouseDown.value = true;
       downPoint.value = e.scenePoint
+      mask.set({
+        fill: 'rgba(0, 0, 0, 0.5)',
+      })
     }
 
     function canvasMouseUp(e: TPointerEventInfo) {

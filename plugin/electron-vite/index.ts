@@ -13,7 +13,7 @@ async function buildElectron(encode = false) {
         logLevel: 'error',
         build: {
             outDir: resolve(process.cwd(), 'dist', 'electron'),
-            minify: false,
+            minify: encode,
             lib: {
                 entry: [
                     resolve(process.cwd(), 'electron', 'main.ts'),
@@ -26,6 +26,7 @@ async function buildElectron(encode = false) {
                 external: [
                     // 告诉 Rollup 不要打包内建 API
                     'electron',
+                    'node',
                     'bytenode',
                     ...builtinModules
                 ],
@@ -51,8 +52,6 @@ export default (): Plugin => {
             server.httpServer?.once('listening', () => {
                 const addressInfo = server.httpServer?.address() as AddressInfo;
                 const address = `http://localhost:${addressInfo.port}`;
-                console.log(address, electron.toString());
-
                 const electronProcess = spawn(
                     electron.toString(),
                     ['./dist/electron/main.cjs', address],
