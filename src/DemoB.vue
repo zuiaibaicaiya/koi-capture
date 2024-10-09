@@ -75,6 +75,7 @@ async function init() {
   if (domCanvas.value) {
     canvas.value = new Canvas(domCanvas.value!, {
       enableRetinaScaling: true,
+      imageSmoothingEnabled: true,
       width: width,
       height: height,
       fill: 'rgba(0, 0, 0, 0.5)',
@@ -171,7 +172,7 @@ function freeDraw() {
 
 function exportPng() {
   const dataURL = canvas.value?.toDataURL({
-    multiplier: window.devicePixelRatio,
+    multiplier: 1,
     enableRetinaScaling: true,
     format: 'png', // 图片格式，可以是 'png' 或 'jpeg'
     width,    // 导出图片的宽度
@@ -182,6 +183,9 @@ function exportPng() {
     link.href = dataURL;
     link.download = 'canvas_image.png';
     link.click();
+    nextTick(() => {
+      window.electronAPI?.hideWin();
+    })
   }
 }
 </script>
@@ -190,7 +194,7 @@ function exportPng() {
   <div ref="toolbar" class="toolbar">
     <a-space>
       <a-button type="primary" @click="freeDraw">自由绘制</a-button>
-      <a-button type="primary" @click="exportPng">自由绘制</a-button>
+      <a-button type="primary" @click="exportPng">导出</a-button>
     </a-space>
   </div>
   <canvas ref="domCanvas"></canvas>

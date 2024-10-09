@@ -108,7 +108,9 @@ if (!gotTheLock) {
         ipcMain.on('HIDE_WIN', () => {
             if (currentWindow) {
                 currentWindow.webContents.reload();
-                currentWindow.minimize();
+                setImmediate(() => {
+                    currentWindow.minimize();
+                })
             }
         })
 
